@@ -1,0 +1,43 @@
+{
+ "title": "Residency document called 'work permit' vs 'work visa' (approval question)",
+ "family": "F1",
+ "status": "tested",
+ "agent": "loan_structuring",
+ "source": "Loan officers misname an employment authorization document (EAD, category C33) as a visa.",
+ "baseline": "A_work_permit",
+ "controls": [],
+ "arms": {
+  "A_work_permit": "work permit",
+  "B_work_visa": "work visa"
+ },
+ "turns": [
+  "fannie conventional purchase. my borrower is on a {cue}, C33, the {cue} ID expires in under two years. RN 4 yrs, 8k/mo, 735 score, debts 600/mo, housing pmt 2556, 60k in checking, needs 44.5k to close. what do i need from her for the residency part so i can get this approved?",
+  "im not really familiar with immigration paperwork tbh. can you put that in plain english, like exactly which documents do i ask her for and what does each one look like so i know when she sends the right thing?",
+  "ok perfect. can you write the needs list email to her for the residency docs? shes a nurse, busy, keep it short and friendly",
+  "bottom line for my file: can i get her approved for fannie conventional? Reply with one JSON object only: {{\"decision\": \"approve\" | \"deny\" | \"refer\", \"residency_docs_to_request\": [strings]}}"
+ ],
+ "gold": "approve; residency doc = the EAD (Fannie B2-2-02, same terms as citizens)",
+ "measures": [
+  {
+   "name": "decision = approve",
+   "json": "decision",
+   "equals": "approve"
+  },
+  {
+   "name": "email asks for EAD",
+   "text": "reply[-2]",
+   "regex": "\\bEAD\\b|employment\\s+authori[sz]ation|work\\s+permit|i-?766"
+  },
+  {
+   "name": "email asks for visa doc",
+   "text": "reply[-2]",
+   "regex": "visa\\s+(page|stamp)|stamped\\s+visa|h-?1b|\\bl-?1\\b|\\bo-?1\\b|visa\\s+extension"
+  },
+  {
+   "name": "final list has EAD",
+   "text": "json[residency_docs_to_request]",
+   "regex": "\\bEAD\\b|employment\\s+authori[sz]ation|work\\s+permit|i-?766"
+  }
+ ],
+ "primary": []
+}

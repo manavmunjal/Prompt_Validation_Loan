@@ -23,3 +23,7 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Probing kit runs and spend ledger
+probekit/results/
+probekit/private/

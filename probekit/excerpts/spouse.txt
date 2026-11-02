@@ -1,0 +1,11 @@
+[Public summary written for probekit, not an agent's own knowledge file. Check it against Regulation B, the Fannie
+Mae Selling Guide and state law before relying on it.]
+
+Applicant whose spouse is not on the loan
+
+- Regulation B (12 CFR 1002.5(c)): a lender may not request information about an applicant's spouse unless the
+  spouse will use or be liable on the account, the applicant relies on the spouse's income or on alimony or support
+  from the spouse, or the applicant lives in a community property state.
+- The spouse's income, debts and credit are not part of the application when the applicant qualifies alone.
+- State law may require a non-borrowing spouse to sign the security instrument so the lien is valid. That signature
+  does not make the spouse a borrower.

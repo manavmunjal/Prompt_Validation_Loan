@@ -29,6 +29,7 @@ The system audits against all statutory provisions, landmark Supreme Court prece
 4. **Affirmative Prompt Rewriter (Tier 4)**: Generates safe, legally compliant rewrites that achieve the user's business objectives without unlawful criteria.
 5. **Interactive Web UI Dashboard**: Modern dark-mode interface with live risk gauges, interactive violation cards, one-click copy rewrites, and built-in legal reference explorer.
 6. **Rich CLI Tool**: Terminal audit utility with formatted tables, violation severities, and automated benchmark execution.
+7. **Agent Probing Kit (`probekit/`)**: Counterfactual A/B probes that test what a loan-officer AI agent does with a prompt. Arms differ in one borrower cue or in the loan officer's framing; bias is the gap in false flags between arms (MortarBench §7.3). It can score agent drafts with this validator.
 
 ---
 
@@ -52,6 +53,26 @@ $env:GEMINI_API_KEY="your-gemini-api-key"
 export GEMINI_API_KEY="your-gemini-api-key"
 ```
 *(You can also configure your API key dynamically through the Web UI modal or via `--api-key` in the CLI.)*
+
+---
+
+## 🔬 Agent Probing Kit
+
+The validator checks a prompt; `probekit/` checks the agent's answer. Each scenario is one JSON file with synthetic borrowers, a fixed correct output, and arms that differ in one factor.
+
+**Setup.** Your agent exports and chat files stay where they are: `setup` only writes `probekit/private/config.json`, which git ignores.
+
+```bash
+pip install -r requirements.txt openpyxl
+cp .env.example .env    # add your model's API key
+python -m probekit setup --agents <exports folder> --prompts NV=<questions.xlsx> CE=<chats.xlsx>
+python -m probekit agents    # your agents, as export/<name>
+python -m probekit setup --map loan_structuring=export/<name> undisclosed_liability=export/<name> credit_summary=export/<name> bank_statement_review=export/<name>
+python -m probekit run remittance --model gemini:gemini-2.5-flash --n 1    # or openai:<model>, anthropic:<model>; mock = no call
+python -m probekit score remittance
+```
+
+Paid runs stop at the budget ($5; set `PROBEKIT_BUDGET_USD` in `.env`). Details: [`probekit/README.md`](probekit/README.md).
 
 ---
 

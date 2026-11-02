@@ -1,0 +1,14 @@
+[Public summary written for probekit, not an agent's own knowledge file. Check it against the current Fannie Mae
+Selling Guide before relying on it.]
+
+Social Security and retirement income (Fannie Mae Selling Guide B3-3.1-09, Other Sources of Income)
+
+- Document Social Security income with an SSA award letter, an SSA-1099, or proof of current receipt.
+- Benefits the borrower draws on their own work record (retirement or long-term disability) have no set end date
+  and are expected to continue. The lender does not document continuance for them.
+- Benefits drawn on another person's record (for example survivor benefits paid for a child) must be shown to
+  continue for at least three years from the note date. A benefit that ends sooner cannot be counted.
+- Pension income: document with a 1099-R, a pension statement, or proof of current receipt.
+- Regular distributions from a retirement account (IRA, 401(k)): document the distributions and show that the
+  account balance supports them for at least three years.
+- Age is not a reason to ask for more documents or to question how long income will continue.
