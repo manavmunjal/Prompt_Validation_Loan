@@ -1,8 +1,10 @@
 """
-Leak check before sharing the kit. Scans every text file in the kit (results/ excluded) for:
+Leak check before sharing the kit. Scans every text file in the kit (results/ excluded) and in probes/ (the test
+cards, gross-up scenario files, gold cases and scripts) for:
 - personal-data patterns (email, phone other than the fictional 555-01xx range, SSN) and keys or internal ids;
 - terms the private config blocks (e.g. the lender's name, staff names);
-- runs of 6+ words copied from the private text in `corpora` (agent instructions, knowledge files, drafts);
+- runs of 6+ words copied from the private text in `corpora` (agent instructions, knowledge files, drafts), except
+  the runs listed in PUBLIC (public rule text that the private text also quotes, and two cleared file names);
 - text copied from `prompt_files` (real prompts): a finding when prompt_text_in_repo is false; when it is true (the
   repo's readers hold the files), only a copied run with a first name, a 7+ digit number, or an SSN or phone shape is;
 - files under probekit/private/ or probekit/results/ that git tracks (they would be pushed).
@@ -28,13 +30,34 @@ RULES = [("email address", r"[\w.+-]+@[\w-]+\.[\w.-]+"),
 FICTIONAL_PHONE = re.compile(r"555[ .-]01\d\d")
 N = 6
 SKIP = {"private", "results", "__pycache__", ".git", ".pytest_cache"}
-TEXT = {".py", ".md", ".json", ".txt", ".toml", ".cfg", ".yml", ".yaml", ".gitignore"}
+TEXT = {".py", ".md", ".json", ".txt", ".toml", ".cfg", ".yml", ".yaml", ".gitignore", ".csv", ".sha256"}
+ROOTS = (config.KIT, config.KIT.parent / "probes")
+# 6-word runs that also occur in the private text and are cleared for this repo; they are not findings. Add one only
+# after naming here its public source or who cleared it.
+PUBLIC = {
+    # Fannie Mae Selling Guide (public rule text, quoted in the gross-up gold cases and document menu)
+    "on or before the first payment",
+    "1099 most recent signed federal tax",
+    "ssa 1099 most recent signed federal",
+    # Our own generic wording of a request (gross-up rounds, paraphrase 1); a real prompt has the same six words
+    "can you calculate the qualifying income",
+    # File names of the income calculator's two knowledge files (probes/README.md setup step). Names only, no file
+    # text; cleared for this repo on 2026-11-24
+    "income calcs conventional system prompt txt",
+    "income calcs conventional policy math txt",
+}
 
 
 def kit_files():
-    for p in sorted(config.KIT.rglob("*")):
-        if p.is_file() and (p.suffix in TEXT or p.name in TEXT) and not SKIP & set(p.relative_to(config.KIT).parts):
-            yield p
+    for root in ROOTS:
+        for p in sorted(root.rglob("*")):
+            if p.is_file() and (p.suffix in TEXT or p.name in TEXT) and not SKIP & set(p.relative_to(root).parts):
+                yield p
+
+
+def _rel(f):
+    """Path as reported: inside the kit as before (relative to probekit/), else relative to the repo root."""
+    return f.relative_to(config.KIT) if config.KIT in f.parents else f.relative_to(config.KIT.parent)
 
 
 def words(text):
@@ -73,7 +96,7 @@ def private_grams():
     is left out (the PII rule covers it). Runs of row ids only (e.g. 'nv 146 nv 235 nv 551') are left out."""
     grams = _grams(config.load()["corpora"])
     grams = grams - prompt_grams() if config.load()["prompt_text_in_repo"] else grams | prompt_grams()
-    return {g for g in grams if not all(re.fullmatch(r"[a-z]{2}|\d+", w) for w in g.split())}
+    return {g for g in grams - PUBLIC if not all(re.fullmatch(r"[a-z]{2}|\d+", w) for w in g.split())}
 
 
 @lru_cache(maxsize=None)
@@ -135,7 +158,7 @@ def scan():
     rules += [(f"blocked term {t!r}", re.compile(rf"\b{re.escape(t)}\b", re.I)) for t in cfg["blocked_terms"]]
     grams, hits, n_copied = private_grams(), [], 0
     for f in kit_files():
-        rel = f.relative_to(config.KIT)
+        rel = _rel(f)
         for i, line in enumerate(f.read_text(errors="ignore").splitlines(), 1):
             for name, pat in rules:
                 for m in pat.finditer(line):

@@ -55,8 +55,20 @@ def cmd_setup(a):
         if agent not in exports:
             sys.exit(f"--map {role}={agent}: not an agent id from `python -m probekit agents`")
         roles[role] = {"export": exports[agent]}
-    for role, f in _pairs(a.knowledge, "knowledge").items():
-        roles.setdefault(role, {})["knowledge"] = [f]
+    known = {}
+    for x in a.knowledge or []:  # a role may repeat: its files are appended in the order given
+        role, _, f = x.partition("=")
+        if not f:
+            sys.exit("--knowledge takes ROLE=FILE pairs")
+        known.setdefault(role, []).append(f)
+    for role, fs in known.items():
+        if role not in roles:
+            sys.exit(f"--knowledge {role}=...: map the role first (--map {role}=export/<name>)")
+        files = next(Path(cfg["agents_dir"]).glob(roles[role]["export"])) / "files"
+        if missing := [f for f in fs if not (files / f).is_file()]:
+            have = ", ".join(sorted(q.name for q in files.glob("*"))) or "no files"
+            sys.exit(f"--knowledge {role}: not in {files}: {', '.join(missing)} (it holds: {have})")
+        roles[role]["knowledge"] = fs
     path.write_text(json.dumps(cfg, indent=1, ensure_ascii=False) + "\n")
     config.load.cache_clear()
     print(f"wrote {path} (git-ignored)\n{len(exports)} agents found; {len(roles)} stand-in ids mapped to real agents")
@@ -132,7 +144,8 @@ def main(argv=None):
     u.add_argument("--prompts", nargs="+", metavar="PREFIX=FILE", help="chat files (.xlsx/.csv), e.g. NV=questions.xlsx")
     u.add_argument("--map", nargs="+", metavar="ROLE=AGENT", help="run a stand-in id on a real agent, "
                    "e.g. loan_structuring=export/<name>")
-    u.add_argument("--knowledge", nargs="+", metavar="ROLE=FILE", help="knowledge file in the agent's files/ folder")
+    u.add_argument("--knowledge", nargs="+", metavar="ROLE=FILE", help="knowledge file in the agent's files/ folder; "
+                   "repeat ROLE=FILE to add several, in order")
     u.set_defaults(f=cmd_setup)
     sub.add_parser("list").set_defaults(f=cmd_list)
     sub.add_parser("agents").set_defaults(f=cmd_agents)

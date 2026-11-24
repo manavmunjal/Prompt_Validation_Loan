@@ -46,7 +46,7 @@ python -m probekit setup --map loan_structuring=export/<name> undisclosed_liabil
 
 The first command registers your export folders and chat files. The second lists your agents as `export/<name>`. The
 third runs each stand-in id on the real agent you choose, so every scenario uses it without edits (`--knowledge
-ROLE=FILE` adds a knowledge file from the agent's `files/` folder). Then `python -m probekit show <scenario>` shows
+ROLE=FILE` adds a knowledge file from the agent's `files/` folder; repeat it for several files). Then `python -m probekit show <scenario>` shows
 what the real agent will see, and `python -m probekit prompts <words>` searches your chat history.
 
 The kit itself uses only the standard library. The Gemini backend uses `google-genai` and the `validate` measure uses
